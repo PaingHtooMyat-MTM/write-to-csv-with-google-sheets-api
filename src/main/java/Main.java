@@ -1,10 +1,8 @@
 import com.google.api.services.sheets.v4.Sheets;
-import com.google.api.services.sheets.v4.model.ValueRange;
-import com.opencsv.CSVWriter;
 import org.yaml.snakeyaml.Yaml;
 
-import java.io.FileWriter;
 import java.io.InputStream;
+import java.util.Arrays;
 import java.util.List;
 
 public class Main {
@@ -26,26 +24,47 @@ public class Main {
 
         Sheets service = SheetsServiceUtil.getSheetsServiceWithAccessToken(accessToken);
 
-        // Use Sheets API
-        String spreadsheetId = "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms";
+        // Sheets API
+
+        // read Example Sheet (from Google)
+        String exampleSpreadSheetId = "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms";
+        SheetManager exampleSheetManager = new SheetManager(service, exampleSpreadSheetId);
         String range = "'Class Data'";
-        ValueRange response = service.spreadsheets().values().get(spreadsheetId, range).execute();
+        List<List<Object>> readDataFromExample = exampleSheetManager.readRange(range);
 
-        System.out.println("Values: " + response.getValues());
-        List<List<Object>> data = response.getValues();
+        // Write to CSV
+        WriteToCsv.WriteDataToCsv(readDataFromExample);
 
-        if (data == null || data.isEmpty()) {
-            System.out.println("No data found.");
-        } else {
-            try (CSVWriter writer = new CSVWriter(new FileWriter("data.csv"))) {
-                for (List<Object> row : data) {
-                    String[] csvRow = row.stream()
-                            .map(Object::toString)
-                            .toArray(String[]::new);
-                    writer.writeNext(csvRow);
-                }
-                System.out.println("Data written to data.csv successfully!");
-            }
-        }
+
+        // Create a new spreadsheet
+        String newSpreadsheetId = SheetManager.createNewSpreadsheet(service, "My New Spreadsheet");
+        SheetManager manager = new SheetManager(service, newSpreadsheetId);
+
+        // Create a sheet within spreadsheet
+        manager.createSheet("MyData");
+
+        // Write data
+        List<List<Object>> data = Arrays.asList(
+                Arrays.asList("Name", "Age"),
+                Arrays.asList("Alice", "30"),
+                Arrays.asList("Bob", "25")
+        );
+        manager.updateRange("MyData!A1", data);
+
+        // Read data
+        List<List<Object>> readData = manager.readRange("MyData!A1:B3");
+        readData.forEach(row -> System.out.println(row));
+
+        // Create a new sheet within spreadsheet and upload data from CSV to the new Sheet
+        manager.createSheet("DataFromCsv");
+        List<List<Object>> DataFromCsv = ReadFromCsv.readDataFromCsv("data.csv");
+
+        manager.updateRange("DataFromCsv", DataFromCsv);
+
+        // Clear data
+//        manager.clearRange("MyData!A2:B3");
+
+        // Delete sheet
+//        manager.deleteSheetByName("MyData");
     }
 }
