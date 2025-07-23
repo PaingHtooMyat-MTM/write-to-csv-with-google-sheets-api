@@ -1,22 +1,16 @@
-import com.google.api.services.sheets.v4.Sheets;
-import org.yaml.snakeyaml.Yaml;
+package com.libraries;
 
-import java.io.InputStream;
+import com.google.api.services.sheets.v4.Sheets;
 import java.util.Arrays;
 import java.util.List;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-        Yaml yaml = new Yaml();
+        YamlConfigLoader configLoader = new YamlConfigLoader();
+        Credentials credentials = configLoader.loadCredentials();
 
-        InputStream inputStream = Main.class
-                .getClassLoader()
-                .getResourceAsStream("application.yml");
-
-        Credentials credentials = yaml.loadAs(inputStream, Credentials.class);
-
-        String clientId = credentials.getInstalled().getClient_id();
-        String clientSecret = credentials.getInstalled().getClient_secret();
+        String clientId = credentials.getClient_id();
+        String clientSecret = credentials.getClient_secret();
 
         String refreshToken = SheetsServiceUtil.getRefreshToken(clientId, clientSecret);
 
@@ -57,7 +51,7 @@ public class Main {
 
         // Create a new sheet within spreadsheet and upload data from CSV to the new Sheet
         manager.createSheet("DataFromCsv");
-        List<List<Object>> DataFromCsv = ReadFromCsv.readDataFromCsv("data.csv");
+        List<List<Object>> DataFromCsv = ReadFromCsv.readDataFromCsv("data/data.csv");
 
         manager.updateRange("DataFromCsv", DataFromCsv);
 

@@ -1,3 +1,5 @@
+package com.libraries;
+
 import com.opencsv.CSVWriter;
 
 import java.io.FileWriter;
@@ -9,7 +11,7 @@ public class WriteToCsv {
         if (data == null || data.isEmpty()) {
             System.out.println("No data found.");
         } else {
-            try (CSVWriter writer = new CSVWriter(new FileWriter("data.csv"))) {
+            try (CSVWriter writer = new CSVWriter(new FileWriter("data/data.csv"))) {
                 for (List<Object> row : data) {
                     String[] csvRow = row.stream()
                             .map(Object::toString)

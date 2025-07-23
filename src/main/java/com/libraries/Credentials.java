@@ -1,4 +1,6 @@
-public class Installed {
+package com.libraries;
+
+public class Credentials {
     private String client_id;
     private String client_secret;
 
