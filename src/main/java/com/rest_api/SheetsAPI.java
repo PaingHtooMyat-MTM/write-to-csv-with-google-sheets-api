@@ -74,34 +74,56 @@ public class SheetsAPI {
     }
 
     private static HttpURLConnection getRequest(String url, String token) throws IOException {
-        HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
-        conn.setRequestMethod("GET");
-        conn.setRequestProperty("Authorization", "Bearer " + token);
-        return conn;
+        return sendWithRetry(url, token, "GET", null);
     }
 
     private static HttpURLConnection postRequest(String url, String token, String json) throws IOException {
-        HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
-        conn.setRequestMethod("POST");
-        conn.setRequestProperty("Authorization", "Bearer " + token);
-        conn.setRequestProperty("Content-Type", "application/json");
-        conn.setDoOutput(true);
-        try (OutputStream os = conn.getOutputStream()) {
-            os.write(json.getBytes());
-        }
-        return conn;
+        return sendWithRetry(url, token, "POST", json);
     }
 
     private static HttpURLConnection putRequest(String url, String token, String json) throws IOException {
-        HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
-        conn.setRequestMethod("PUT");
-        conn.setRequestProperty("Authorization", "Bearer " + token);
-        conn.setRequestProperty("Content-Type", "application/json");
-        conn.setDoOutput(true);
-        try (OutputStream os = conn.getOutputStream()) {
-            os.write(json.getBytes());
+        return sendWithRetry(url, token, "PUT", json);
+    }
+
+    private static HttpURLConnection sendWithRetry(String url, String token, String method, String bodyJson) throws IOException {
+        int[] retryDelays = {5, 10, 20}; // in seconds
+        int attempts = 0;
+
+        while (true) {
+            HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
+            conn.setRequestMethod(method);
+            conn.setRequestProperty("Authorization", "Bearer " + token);
+            conn.setRequestProperty("Content-Type", "application/json");
+
+            if (!method.equals("GET") && bodyJson != null) {
+                conn.setDoOutput(true);
+                try (OutputStream os = conn.getOutputStream()) {
+                    os.write(bodyJson.getBytes());
+                }
+            }
+
+            int responseCode = conn.getResponseCode();
+            if (responseCode != 429) {
+                return conn;
+            }
+
+            if (attempts >= retryDelays.length) {
+                throw new IOException("Exceeded max retries for 429 Too Many Requests.");
+            }
+
+            // Handle 429 retry logic
+            int waitTime = retryDelays[Math.min(attempts, retryDelays.length - 1)];
+            System.out.println("Retry attempts: " + attempts + " retry Delays: " + waitTime);
+
+            System.out.println("Received 429 Too Many Requests. Retrying in " + waitTime + " seconds...");
+            try {
+                Thread.sleep(waitTime * 1000L);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new IOException("Retry interrupted", e);
+            }
+            attempts++;
         }
-        return conn;
     }
 
     private static String readResponse(HttpURLConnection conn) throws IOException {
