@@ -127,9 +127,10 @@ public class SheetsAPI {
     }
 
     private static String readResponse(HttpURLConnection conn) throws IOException {
-        try (InputStream stream = conn.getResponseCode() >= 400
-                ? conn.getErrorStream()
-                : conn.getInputStream();
+        int responseCode = conn.getResponseCode();
+        boolean isError = responseCode >= 400;
+
+        try (InputStream stream = isError ? conn.getErrorStream() : conn.getInputStream();
              BufferedReader in = new BufferedReader(new InputStreamReader(stream))) {
 
             StringBuilder response = new StringBuilder();
@@ -139,6 +140,11 @@ public class SheetsAPI {
             }
 
             System.out.println(response);
+
+            if (isError) {
+                throw new IOException("HTTP error " + responseCode + ": " + response);
+            }
+
             return response.toString();
         } finally {
             conn.disconnect();

@@ -65,14 +65,25 @@ public class OAuthHelper {
                 os.write(body.getBytes());
             }
 
-            try (BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()))) {
+            int responseCode = conn.getResponseCode();
+            boolean isError = responseCode >= 400;
+
+            try (InputStream stream = isError ? conn.getErrorStream() : conn.getInputStream();
+                 BufferedReader in = new BufferedReader(new InputStreamReader(stream))) {
+
                 StringBuilder resp = new StringBuilder();
                 String line;
                 while ((line = in.readLine()) != null) {
                     resp.append(line);
                 }
+
+                if (isError) {
+                    throw new IOException("HTTP error " + responseCode + ": " + resp);
+                }
+
                 return resp.toString();
             }
+
         } finally {
             if (conn != null) {
                 conn.disconnect();
