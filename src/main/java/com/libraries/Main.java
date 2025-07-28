@@ -9,8 +9,8 @@ public class Main {
         YamlConfigLoader configLoader = new YamlConfigLoader();
         Credentials credentials = configLoader.loadCredentials();
 
-        String clientId = credentials.getClient_id();
-        String clientSecret = credentials.getClient_secret();
+        String clientId = credentials.getClientId();
+        String clientSecret = credentials.getClientSecret();
 
         String refreshToken = SheetsServiceUtil.getRefreshToken(clientId, clientSecret);
 

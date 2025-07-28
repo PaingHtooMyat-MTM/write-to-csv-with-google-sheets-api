@@ -11,18 +11,18 @@ public class Main {
         YamlConfigLoader configLoader = new YamlConfigLoader();
         Credentials credentials = configLoader.loadCredentials();
 
-        String CLIENT_ID = credentials.getClient_id();
-        String CLIENT_SECRET = credentials.getClient_secret();
-        String REDIRECT_URI = "urn:ietf:wg:oauth:2.0:oob";
-        String SHEET_NAME = "Sheet1";
+        final String CLIENT_ID = credentials.getClientId();
+        final String CLIENT_SECRET = credentials.getClientSecret();
+        final String REDIRECT_URI = "urn:ietf:wg:oauth:2.0:oob";
+        final String SHEET_NAME = "Sheet1";
 
         Map<String, String> tokens = TokenStorage.loadTokens();
 
         String accessToken;
         String refreshToken;
 
-        if (tokens.containsKey("access_token") && tokens.containsKey("refresh_token")) {
-            refreshToken = tokens.get("refresh_token");
+        if (tokens.containsKey("accessToken") && tokens.containsKey("refreshToken")) {
+            refreshToken = tokens.get("refreshToken");
             accessToken = OAuthHelper.refreshAccessToken(refreshToken, CLIENT_ID, CLIENT_SECRET);
             TokenStorage.saveTokens(accessToken, refreshToken);
         } else {

@@ -127,21 +127,21 @@ public class SheetsAPI {
     }
 
     private static String readResponse(HttpURLConnection conn) throws IOException {
-        BufferedReader in;
-        try {
-            in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-        } catch (IOException e) {
-            in = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
-        }
+        try (InputStream stream = conn.getResponseCode() >= 400
+                ? conn.getErrorStream()
+                : conn.getInputStream();
+             BufferedReader in = new BufferedReader(new InputStreamReader(stream))) {
 
-        StringBuilder response = new StringBuilder();
-        String line;
-        while ((line = in.readLine()) != null) {
-            response.append(line);
-        }
-        in.close();
+            StringBuilder response = new StringBuilder();
+            String line;
+            while ((line = in.readLine()) != null) {
+                response.append(line);
+            }
 
-        System.out.println(response);
-        return response.toString();
+            System.out.println(response);
+            return response.toString();
+        } finally {
+            conn.disconnect();
+        }
     }
 }

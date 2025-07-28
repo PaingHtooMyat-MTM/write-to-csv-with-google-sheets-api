@@ -14,8 +14,8 @@ public class TokenStorage {
 
     public static void saveTokens(String accessToken, String refreshToken) throws IOException {
         Map<String, String> tokens = new HashMap<>();
-        tokens.put("access_token", accessToken);
-        tokens.put("refresh_token", refreshToken);
+        tokens.put("accessToken", accessToken);
+        tokens.put("refreshToken", refreshToken);
 
         try (Writer writer = new FileWriter(FILE_PATH)) {
             gson.toJson(tokens, writer);
