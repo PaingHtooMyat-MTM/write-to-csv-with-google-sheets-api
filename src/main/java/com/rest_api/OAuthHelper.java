@@ -1,7 +1,10 @@
 package com.rest_api;
 
+import com.google.gson.Gson;
+
 import java.io.*;
 import java.net.*;
+import java.util.Map;
 import java.util.Scanner;
 
 public class OAuthHelper {
@@ -78,10 +81,11 @@ public class OAuthHelper {
     }
 
     private static String extractJsonValue(String json, String key) {
-        try {
-            return json.split("\"" + key + "\"\\s*:\\s*\"")[1].split("\"")[0];
-        } catch (Exception e) {
-            throw new IllegalStateException("Failed to extract key: " + key + " from JSON: " + json, e);
+        Map<String, Object> map = new Gson().fromJson(json, Map.class);
+        Object value = map.get(key);
+        if (value == null) {
+            throw new IllegalStateException("Key \"" + key + "\" not found in JSON response: " + json);
         }
+        return value.toString();
     }
 }
