@@ -8,10 +8,10 @@ import java.util.List;
 
 public class ReadFromCsv {
     // Read data from CSV and convert to List<List<Object>>
-    public static List<List<Object>> readDataFromCsv(String fileName) {
+    public static List<List<Object>> readDataFromCsv(String filePath) {
         List<List<Object>> result = new ArrayList<>();
 
-        try (CSVReader reader = new CSVReader(new FileReader(fileName))) {
+        try (CSVReader reader = new CSVReader(new FileReader(filePath))) {
             List<String[]> rows = reader.readAll();
 
             for (String[] row : rows) {

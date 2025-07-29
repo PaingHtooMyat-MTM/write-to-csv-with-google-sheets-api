@@ -33,7 +33,7 @@ public class SheetsAPI {
         return (String) result.get("spreadsheetId");
     }
 
-    public static void appendRow(String token, String sheetId, String sheetName, List<List<String>> values) throws IOException {
+    public static void appendRow(String token, String sheetId, String sheetName, List<List<Object>> values) throws IOException {
         String url = String.format(
                 "https://sheets.googleapis.com/v4/spreadsheets/%s/values/%s!A1:append?valueInputOption=USER_ENTERED",
                 sheetId, sheetName
@@ -56,7 +56,7 @@ public class SheetsAPI {
         System.out.println(gson.toJson(jsonObject));
     }
 
-    public static void updateRow(String token, String sheetId, String sheetName, String range, List<List<String>> values) throws IOException {
+    public static void updateRow(String token, String sheetId, String sheetName, String range, List<List<Object>> values) throws IOException {
         String url = String.format("https://sheets.googleapis.com/v4/spreadsheets/%s/values/%s!%s?valueInputOption=USER_ENTERED", sheetId, sheetName, range);
 
         Map<String, Object> requestBody = new HashMap<>();
@@ -69,6 +69,12 @@ public class SheetsAPI {
 
     public static void clearRow(String token, String sheetId, String sheetName, String range) throws IOException {
         String url = String.format("https://sheets.googleapis.com/v4/spreadsheets/%s/values/%s!%s:clear", sheetId, sheetName, range);
+        HttpURLConnection conn = postRequest(url, token, "{}");
+        readResponse(conn);
+    }
+
+    public static void clearAllData(String token, String sheetId, String sheetName) throws IOException {
+        String url = String.format("https://sheets.googleapis.com/v4/spreadsheets/%s/values/%s:clear", sheetId, sheetName);
         HttpURLConnection conn = postRequest(url, token, "{}");
         readResponse(conn);
     }

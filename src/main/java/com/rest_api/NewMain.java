@@ -1,5 +1,7 @@
 package com.rest_api;
 
+import com.libraries.ReadFromCsv;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,13 +22,13 @@ public class NewMain {
         final String CLIENT_ID = argMap.get("-i");
         final String CLIENT_SECRET = argMap.get("-s");
         final String REFRESH_TOKEN = argMap.get("-r");
-//        final String SPREAD_SHEET_NAME = argMap.get("-n");
         final String SHEET_NAME = argMap.get("-n");
         final String SHEET_URL = argMap.get("-u");
+        final String CSV_FILE_PATH = argMap.get("-f");
 
-        if (CLIENT_ID == null || CLIENT_SECRET == null || REFRESH_TOKEN == null || SHEET_NAME == null || SHEET_URL == null) {
+        if (CLIENT_ID == null || CLIENT_SECRET == null || REFRESH_TOKEN == null || SHEET_NAME == null || SHEET_URL == null || CSV_FILE_PATH == null) {
             System.err.println("Missing required arguments:");
-            System.err.println("Usage: java -jar myapp.jar -i <client_id> -s <client_secret> -r <refresh_token> -n <sheet_name> -u <sheet_url>");
+            System.err.println("Usage: java -jar myapp.jar -i <client_id> -s <client_secret> -r <refresh_token> -n <sheet_name> -u <sheet_url> -f <csv_file_path>");
             System.exit(1);
         }
 
@@ -36,23 +38,10 @@ public class NewMain {
         // === Refresh access token using refreshToken from CLI ===
         String accessToken = OAuthHelper.refreshAccessToken(REFRESH_TOKEN, CLIENT_ID, CLIENT_SECRET);
 
-        // === Create spreadsheet
-//        String spreadsheetId = SheetsAPI.createSpreadsheet(accessToken, SPREAD_SHEET_NAME, SHEET_NAME);
+        SheetsAPI.clearAllData(accessToken, SHEET_ID, SHEET_NAME);
 
-        // === CRUD operations ===
-        List<List<String>> rowToInsert = List.of(
-                List.of("Alice", "alice@example.com", "25", "ABC", "100"),
-                List.of("Bob", "bob@example.com", "30")
-        );
-        List<List<String>> rowToUpdate = List.of(List.of("Updated Alice", "updated@example.com", "30"));
-        String updateRange = "A3:C3";
-        String readRange = "A1:C5";
-        String clearRange = "A1:C1";
-
-        SheetsAPI.appendRow(accessToken, SHEET_ID, SHEET_NAME, rowToInsert);
-        SheetsAPI.updateRow(accessToken, SHEET_ID, SHEET_NAME, updateRange, rowToUpdate);
-        SheetsAPI.readSheet(accessToken, SHEET_ID, SHEET_NAME, readRange);
-        SheetsAPI.clearRow(accessToken, SHEET_ID, SHEET_NAME, clearRange);
+        List<List<Object>> dataFromCsv = ReadFromCsv.readDataFromCsv(CSV_FILE_PATH);
+        SheetsAPI.appendRow(accessToken, SHEET_ID, SHEET_NAME, dataFromCsv);
     }
 
     public static String extractSpreadsheetId(String url) {
