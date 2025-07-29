@@ -12,10 +12,10 @@ public class SheetsAPI {
 
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-    public static String createSpreadsheet(String accessToken, String title, String sheetName) throws IOException {
+    public static String createSpreadsheet(String accessToken, String SPREAD_SHEET_NAME, String sheetName) throws IOException {
         Map<String, Object> requestBody = new HashMap<>();
         Map<String, Object> properties = new HashMap<>();
-        properties.put("title", title);
+        properties.put("title", SPREAD_SHEET_NAME);
         requestBody.put("properties", properties);
 
         Map<String, Object> sheet = new HashMap<>();
